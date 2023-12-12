@@ -94,7 +94,7 @@ UStateNode* UStatusTreeComponent::SwitchState(TSubclassOf<UStateNode> Type)
 
 bool UStatusTreeComponent::IsCurrentState(TSubclassOf<UNodeBase> Type) const
 {
-	if (CurrentState->GetClass() == Type) return false;
+	if (CurrentState->GetClass() == Type) return true;
 	_Foreach_Valid_Node_(CurrentState->GetStatusLayers(), 
 		if (Node->GetClass() == Type) return true;
 	)
