@@ -17,10 +17,11 @@ class STATUSTREE_API UStatusTreeComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
-	UStateNode* CurrentState = nullptr;    // 当前状态节点
-	
 	UPROPERTY(EditAnywhere)
 	class UStateNode* RootStateNode;    // 初始根状态节点
+
+	UPROPERTY(EditAnywhere)
+	bool bIsDelayEnter = false;    // 将OnEnter延迟到与OnTick触发
 
 	/**
 	 * @brief 结束当前状态并重写进入RootState(该状态IsExit为True才可退出)
@@ -57,6 +58,11 @@ public:
 public:	
 	// Sets default values for this component's properties
 	UStatusTreeComponent();
+
+	// Called every frame
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	static UStatusTreeComponent* FindOnOwner(const UActorComponent* Target);
 	
 	/**
 	 * @brief 初始化节点, 用于节点递归
@@ -73,9 +79,7 @@ protected:
 	 */
 	void EntryRoot();
 	
-public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-	static UStatusTreeComponent* FindOnOwner(const UActorComponent* Target);
+private:
+	UStateNode* CurrentState = nullptr;    // 当前状态节点
+	TArray<UNodeBase*> OnEnterStatusLayers;    // 储存需要进入的状态
 };
