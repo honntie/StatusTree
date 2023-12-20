@@ -12,6 +12,7 @@
 * 否决TSet当节点容器
 * 为StatusTreeComponent::SwitchState多一个IsEnterLated参数
 * 移除StatusTreeComponent::bIsDelayEnter
+* UStateNode::IsExit升级到UNodeBase::IsExit
 
 
 ### 23/12/12

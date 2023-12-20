@@ -47,12 +47,17 @@ void UStatusTreeComponent::EntryRoot()
 
 bool UStatusTreeComponent::OverCurrent()
 {
+	// 判断是否可退出节点
 	if (!CurrentState->IsExit) return false;
+	TArray<UNodeBase*> StatusLayers = CurrentState->GetStatusLayers();
+	_Foreach_Valid_Node_(StatusLayers, {
+		if (!Node->IsExit) return false;
+	})
 	
 	// 从内到外退出
-	TArray<UNodeBase*> StatusLayers = CurrentState->GetStatusLayers();
 	CurrentState->OnExit();
 	_Foreach_Valid_Node_(StatusLayers, Node->OnExit();)
+	
 	EntryRoot();
 	
 	return true;
@@ -97,8 +102,8 @@ UStateNode* UStatusTreeComponent::SwitchState(TSubclassOf<UStateNode> Type, bool
 	_Foreach_Valid_Node_(OnEnterStatusLayers, OnEnterStatusLayers.Last(i)->OnEnter();)
 	NewState->OnEnter();
 	
-	CurrentState = Cast<UStateNode>(NewState);
-	return CurrentState;
+	CurrentState = NewState;
+	return Cast<UStateNode>(NewState);
 }
 
 bool UStatusTreeComponent::IsCurrentState(TSubclassOf<UNodeBase> Type) const
@@ -116,7 +121,7 @@ void UStatusTreeComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	if (!IsValid(CurrentState)) return;
 
-	if (!LateStatusLayers.IsEmpty())
+	if (LateStatusLayers.Num() > 0)
 	{
 		// 执行Late的状态节点
 		_Foreach_Valid_Node_(LateStatusLayers, LateStatusLayers.Last(i)->OnEnter();)

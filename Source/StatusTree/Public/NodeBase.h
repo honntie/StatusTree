@@ -26,16 +26,19 @@ class STATUSTREE_API UNodeBase : public UObject
 #pragma region 蓝图成员/函数
 public:
 	UPROPERTY(EditDefaultsOnly, Instanced, Category="Nodes", meta=(ToolTip = "单向链接状态"))
-	TArray<class UNodeBase*> NextNodes;    // 单向链接状态
+	TArray<class UNodeBase*> NextNodes;  
 
 	UPROPERTY(EditDefaultsOnly, Category="Property", meta=(ToolTip = "是否链接同层的左侧节点"))
-	bool LinkPrev = false;   // 是否链接同层的左侧节点
+	bool LinkPrev = false; 
 
 	UPROPERTY(EditDefaultsOnly, Category="Property", meta=(ToolTip = "是否链接同层的右侧节点"))
-	bool LinkNext = false;   // 是否链接同层的右侧节点
+	bool LinkNext = false;
 
 	UPROPERTY(EditDefaultsOnly, Category="Property", meta=(ToolTip = "是否链接上一个节点"))
-	bool LinkLast = false;    // 是否链接上一个节点
+	bool LinkLast = false;    
+
+	UPROPERTY(EditDefaultsOnly, Category="Property", meta=(ToolTip="是否可当做出口"))
+	bool IsExit = false;   
 
 	UFUNCTION(BlueprintCallable, meta=(DeterminesOutputType = "Type"))
 	UNodeBase* GetStatus(TSubclassOf<UNodeBase> Type) const;

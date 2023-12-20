@@ -78,6 +78,6 @@ protected:
 	void EntryRoot();
 	
 private:
-	UStateNode* CurrentState = nullptr;    // 当前状态节点
+	UNodeBase* CurrentState = nullptr;    // 当前状态节点
 	TArray<UNodeBase*> LateStatusLayers;    // 储存需要进入的状态
 };
