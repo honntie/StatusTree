@@ -48,11 +48,19 @@ void UStatusTreeComponent::EntryRoot()
 bool UStatusTreeComponent::OverCurrent()
 {
 	// 判断是否可退出节点
-	if (!CurrentState->IsExit) return false;
 	TArray<UNodeBase*> StatusLayers = CurrentState->GetStatusLayers();
-	_Foreach_Valid_Node_(StatusLayers, {
-		if (!Node->IsExit) return false;
-	})
+	if (!CurrentState->IsExit)
+	{
+		bool IsExit = false;
+		_Foreach_Valid_Node_(StatusLayers, {
+			if (Node->IsExit)
+			{
+				IsExit = true;
+				break;
+			}
+		})
+		if (!IsExit) return false;
+	}
 	
 	// 从内到外退出
 	CurrentState->OnExit();
@@ -68,41 +76,50 @@ UStateNode* UStatusTreeComponent::SwitchState(TSubclassOf<UStateNode> Type, bool
 	UNodeBase* NewState = CurrentState->FindNextState(Type);
 	if (!IsValid(NewState)) return nullptr;
 
-	TArray<UNodeBase*> OnEnterStatusLayers = NewState->GetStatusLayers();    // 进入状态层
-	TArray<UNodeBase*> ExitStatusLayers = CurrentState->GetStatusLayers();    // 退出状态层
-
-	// 状态层差集
-	while (OnEnterStatusLayers.Num() > 0 && ExitStatusLayers.Num() > 0)
+	if (NewState != CurrentState)
 	{
-		if (OnEnterStatusLayers.Last(0) != ExitStatusLayers.Last(0)) break;
-		OnEnterStatusLayers.RemoveAt(OnEnterStatusLayers.Num() - 1);
-		ExitStatusLayers.RemoveAt(ExitStatusLayers.Num() - 1);
-	}
+		TArray<UNodeBase*> OnEnterStatusLayers = NewState->GetStatusLayers();    // 进入状态层
+		TArray<UNodeBase*> ExitStatusLayers = CurrentState->GetStatusLayers();    // 退出状态层
 
-	// 用满足NextNodes的状态做判断过渡条件
-	const UNodeBase *LastNode = ExitStatusLayers.Num() == 0 ? CurrentState : ExitStatusLayers.Last(0);
-	if (!LastNode->GetTransition(Type)) return nullptr;
-	// 是否满足进入新状态条件
-	else if (!NewState->GetCondition()) return nullptr;
+		// 状态层差集
+		while (OnEnterStatusLayers.Num() > 0 && ExitStatusLayers.Num() > 0 &&
+			   OnEnterStatusLayers.Last(0) == ExitStatusLayers.Last(0))
+		{
+			OnEnterStatusLayers.RemoveAt(OnEnterStatusLayers.Num() - 1);
+			ExitStatusLayers.RemoveAt(ExitStatusLayers.Num() - 1);
+		}
 
-	// 从内到外退出
-	CurrentState->OnExit();
-	_Foreach_Valid_Node_(ExitStatusLayers, Node->OnExit();)
+		// 用满足NextNodes的状态做判断过渡条件
+		// const UNodeBase *LastNode = ExitStatusLayers.Num() == 0 ? CurrentState : ExitStatusLayers.Last(0);
+		if (!CurrentState->GetTransition(Type)) return nullptr;
+		else if (CurrentState->GetStatusLayers().ContainsByPredicate(
+			[Type](const UNodeBase* Node) { return !Node->GetTransition(Type); } ))
+			return nullptr;
+		
+		// 是否满足进入新状态条件
+		if (!NewState->GetCondition()) return nullptr;
+		else if (NewState->GetStatusLayers().ContainsByPredicate(
+			[](const UNodeBase* Node) { return !Node->GetCondition(); } ))
+			return nullptr;
 
-
-	// 到Tick时执行
-	if (IsEnterLated)
-	{
-		LateStatusLayers.Add(NewState);
-		LateStatusLayers.Append(OnEnterStatusLayers);
-		return Cast<UStateNode>(NewState);
-	}
-
-	// 从外到内进入
-	_Foreach_Valid_Node_(OnEnterStatusLayers, OnEnterStatusLayers.Last(i)->OnEnter();)
-	NewState->OnEnter();
+		// 从内到外退出
+		CurrentState->OnExit();
+		_Foreach_Valid_Node_(ExitStatusLayers, Node->OnExit();)
 	
-	CurrentState = NewState;
+		// 到Tick时执行
+		if (IsEnterLated)
+		{
+			LateStatusLayers.Add(NewState);
+			LateStatusLayers.Append(OnEnterStatusLayers);
+			return Cast<UStateNode>(NewState);
+		}
+
+		// 从外到内进入
+		_Foreach_Valid_Node_(OnEnterStatusLayers, OnEnterStatusLayers.Last(i)->OnEnter();)
+		CurrentState = NewState;
+	}
+	
+	if (!IsEnterLated) NewState->OnEnter();
 	return Cast<UStateNode>(NewState);
 }
 
