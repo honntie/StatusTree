@@ -3,13 +3,16 @@
 
 
 ## 需求
-* 节点容器 TArray -> TSet(兼容class问题?)
 * 添加装饰器(参考增强输入系统的装饰器)
     * StatusNode让RootNodes相互链接
     * 让NodeBase不能被子节点Link
 
-* NodeBase::OnEnter前的操作
-    * 为StatusTreeComponent::SwitchState多一个IsDelayEnter参数
+
+### 23/12/20
+* 否决TSet当节点容器
+* 为StatusTreeComponent::SwitchState多一个IsEnterLated参数
+* 移除StatusTreeComponent::bIsDelayEnter
+
 
 ### 23/12/12
 * 修复StatusTreeComponent::IsCurrentStatus判断当前根状态永远为false的Bug

@@ -20,9 +20,6 @@ public:
 	UPROPERTY(EditAnywhere)
 	class UStateNode* RootStateNode;    // 初始根状态节点
 
-	UPROPERTY(EditAnywhere)
-	bool bIsDelayEnter = false;    // 将OnEnter延迟到与OnTick触发
-
 	/**
 	 * @brief 结束当前状态并重写进入RootState(该状态IsExit为True才可退出)
 	 * @return 是否退出成功
@@ -40,11 +37,12 @@ public:
 
 	/**
 	 * @brief 切换当前状态
-	 * @param Type 
+	 * @param Type
+	 * @param IsEnterLated 是否等到Tick执行OnEnter, 同时CurrentNode也会到Tick后才会变化
 	 * @return 返回切换后的状态, 如果切换失败则返回nullptr
 	 */
 	UFUNCTION(BlueprintCallable, meta=(DeterminesOutputType = "Type"))
-	UStateNode* SwitchState(TSubclassOf<UStateNode> Type);
+	UStateNode* SwitchState(TSubclassOf<UStateNode> Type, bool IsEnterLated = false);
 	
 	/**
 	 * @brief 判断当前类型
@@ -81,5 +79,5 @@ protected:
 	
 private:
 	UStateNode* CurrentState = nullptr;    // 当前状态节点
-	TArray<UNodeBase*> OnEnterStatusLayers;    // 储存需要进入的状态
+	TArray<UNodeBase*> LateStatusLayers;    // 储存需要进入的状态
 };

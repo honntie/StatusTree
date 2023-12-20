@@ -58,12 +58,12 @@ bool UStatusTreeComponent::OverCurrent()
 	return true;
 }
 
-UStateNode* UStatusTreeComponent::SwitchState(TSubclassOf<UStateNode> Type)
+UStateNode* UStatusTreeComponent::SwitchState(TSubclassOf<UStateNode> Type, bool IsEnterLated)
 {
 	UNodeBase* NewState = CurrentState->FindNextState(Type);
 	if (!IsValid(NewState)) return nullptr;
 
-	OnEnterStatusLayers = NewState->GetStatusLayers();    // 进入状态层
+	TArray<UNodeBase*> OnEnterStatusLayers = NewState->GetStatusLayers();    // 进入状态层
 	TArray<UNodeBase*> ExitStatusLayers = CurrentState->GetStatusLayers();    // 退出状态层
 
 	// 状态层差集
@@ -83,13 +83,19 @@ UStateNode* UStatusTreeComponent::SwitchState(TSubclassOf<UStateNode> Type)
 	// 从内到外退出
 	CurrentState->OnExit();
 	_Foreach_Valid_Node_(ExitStatusLayers, Node->OnExit();)
-	
-	// 从外到内进入
-	if (!bIsDelayEnter)
+
+
+	// 到Tick时执行
+	if (IsEnterLated)
 	{
-		_Foreach_Valid_Node_(OnEnterStatusLayers, OnEnterStatusLayers.Last(i)->OnEnter();)
-		NewState->OnEnter();
+		LateStatusLayers.Add(NewState);
+		LateStatusLayers.Append(OnEnterStatusLayers);
+		return Cast<UStateNode>(NewState);
 	}
+
+	// 从外到内进入
+	_Foreach_Valid_Node_(OnEnterStatusLayers, OnEnterStatusLayers.Last(i)->OnEnter();)
+	NewState->OnEnter();
 	
 	CurrentState = Cast<UStateNode>(NewState);
 	return CurrentState;
@@ -110,11 +116,12 @@ void UStatusTreeComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	if (!IsValid(CurrentState)) return;
 
-	if (bIsDelayEnter)
+	if (!LateStatusLayers.IsEmpty())
 	{
-		_Foreach_Valid_Node_(OnEnterStatusLayers, OnEnterStatusLayers.Last(i)->OnEnter();)
-		CurrentState->OnEnter();
-		OnEnterStatusLayers.RemoveAll([](const UNodeBase*){return true;});
+		// 执行Late的状态节点
+		_Foreach_Valid_Node_(LateStatusLayers, LateStatusLayers.Last(i)->OnEnter();)
+		CurrentState = Cast<UStateNode>(LateStatusLayers[0]);
+		LateStatusLayers.Empty();
 	}
 	
 	// 从外到内更新
