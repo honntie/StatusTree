@@ -16,6 +16,7 @@
 * 移除StatusTreeComponent::bIsDelayEnter
 * UStateNode::IsExit升级到UNodeBase::IsExit
 * 修复StatusNode的GetCondition和GetTransition无效问题
+* 为UStateNode::CanReentry做特殊处理
 
 
 ### 23/12/12
