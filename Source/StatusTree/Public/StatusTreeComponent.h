@@ -52,7 +52,9 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable)
 	bool IsCurrentState(TSubclassOf<UNodeBase> Type) const;
-	
+
+	UFUNCTION(BlueprintCallable)
+	bool IsCurrentRoot() const;
 public:	
 	// Sets default values for this component's properties
 	UStatusTreeComponent();

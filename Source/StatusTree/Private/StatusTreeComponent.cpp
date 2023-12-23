@@ -132,6 +132,11 @@ bool UStatusTreeComponent::IsCurrentState(TSubclassOf<UNodeBase> Type) const
 	return false;
 }
 
+bool UStatusTreeComponent::IsCurrentRoot() const
+{
+	return CurrentState == RootStateNode;
+}
+
 // Called every frame
 void UStatusTreeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {

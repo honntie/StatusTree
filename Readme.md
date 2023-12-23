@@ -10,6 +10,10 @@
     * 让NodeBase不能被子节点Link
 
 
+### 23/12/23
+* StatusTreeComponent增加IsCurrentRoot函数
+
+
 ### 23/12/20
 * 否决TSet当节点容器
 * 为StatusTreeComponent::SwitchState多一个IsEnterLated参数
